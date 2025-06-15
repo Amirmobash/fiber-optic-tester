@@ -2,161 +2,114 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-// OLED-Amirips
+// نمایشگر OLED
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET    -1
-#define OLED_ADDR     3C
+#define OLED_ADDR     0x3C
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-// Pins
+// پین‌ها
 #define LED_A A2
 #define LED_B A3
 #define LDR_A A0
 #define LDR_B A1
 
-// Parameter
-#define BLINK_DURATION 900    // LED-Einschaltdauer (ms)
-#define SENSITIVITY    15     // Empfindlichkeitsschwelle
-#define DELAY_BETWEEN  900    // Verzögerung zwischen Test A und B
-#define DELAY_RESULT   3000   // Ergebnisanzeigedauer
+// پارامترها
+#define BLINK_DURATION 900    // 
+#define SENSITIVITY    10     // 
+#define DELAY_BETWEEN  900    //
+#define DELAY_RESULT   3000   // Amir Mobasheraghdam
 
 struct Result {
-  int ldr_before;
-  int ldr_after;
   int diff;
   bool ok;
 };
 
-void showWelcomeAnimation() {
-  display.clearDisplay();
-  
-  // Animationseffekt - einlaufender Text
-  for(int i=0; i<4; i++) {
-    display.clearDisplay();
-    display.setTextColor(SSD1306_WHITE);
-    
-    // LWL-TESTER Animation
-    display.setTextSize(2);
-    display.setCursor(10, 5);
-    display.println("LWL-TESTER");
-    
-    // Entwickler-Info mit Animation
-    display.setTextSize(1);
-    display.setCursor(10 + (i*10), 30);
-    display.print("Amir Mobasher");
-    
-    // Unterer animierter Balken
-    display.fillRect(0, 50, 20 + (i*30), 5, SSD1306_WHITE);
-    
-    display.display();
-    delay(200);
-  }
-  
-  // Finale Ansicht für 2 Sekunden
-  display.clearDisplay();
-  display.setTextSize(2);
-  display.setCursor(5, 5);
-  display.println("LWL-TESTER");
-  
-  display.setTextSize(1);
-  display.setCursor(35, 30);
-  display.println("    AMIR");
-  
-  display.setTextSize(1);
-  display.setCursor(10, 50);
-  display.println("Initialisierung...");
-  display.display();
-  delay(2000);
-}
-
 void setup() {
   Serial.begin(9600);
+
   pinMode(LED_A, OUTPUT);
   pinMode(LED_B, OUTPUT);
   digitalWrite(LED_A, LOW);
   digitalWrite(LED_B, LOW);
 
-  // OLED-Initialisierung
   if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {
-    Serial.println(F("OLED-Initialisierung fehlgeschlagen"));
+    Serial.println(F("OLED init failed!"));
     while (1);
   }
-  
-  // Begrüßungsanimation anzeigen
-  showWelcomeAnimation();
+  showSplash();
 }
 
 void loop() {
-  Result a = testChannel("A", LED_A, LDR_A);
+  Result a = testChannel(LED_A, LDR_A);
   delay(DELAY_BETWEEN);
-  Result b = testChannel("B", LED_B, LDR_B);
+  Result b = testChannel(LED_B, LDR_B);
 
   displayResultOLED(a, b);
   delay(DELAY_RESULT);
 }
 
-Result testChannel(const char* name, int ledPin, int ldrPin) {
-  display.clearDisplay();
-  display.setTextColor(SSD1306_WHITE);
-  display.setTextSize(1);
-  display.setCursor(10, 20);
-  display.print("Teste Kanal ");
-  display.print(name);
-  display.display();
-
+Result testChannel(int ledPin, int ldrPin) {
+  // مقدار نور محیط
   int ldr_before = analogRead(ldrPin);
   int threshold = ldr_before + SENSITIVITY;
 
-  Serial.print("["), Serial.print(name), Serial.println("]");
-  Serial.print("Umgebungslicht: "), Serial.print(ldr_before);
-  Serial.print(" | Schwellenwert: "), Serial.println(threshold);
-
+  // LED را روشن کن و مجدداً مقدار بگیر
   digitalWrite(ledPin, HIGH);
   delay(BLINK_DURATION);
   int ldr_after = analogRead(ldrPin);
   digitalWrite(ledPin, LOW);
 
   int diff = ldr_after - ldr_before;
-
-  Serial.print("LED-Licht: "), Serial.print(ldr_after);
-  Serial.print(" | Differenz: "), Serial.print(diff);
-
   bool ok = (ldr_after > threshold);
-  if (ok) {
-    Serial.println(" => SIGNAL ✔");
-  } else {
-    Serial.println(" => KEIN SIGNAL ✗");
-  }
 
-  return {ldr_before, ldr_after, diff, ok};
+  // اطلاعات دیباگ در سریال
+  Serial.print("Baseline: "); Serial.print(ldr_before);
+  Serial.print(" | After: "); Serial.print(ldr_after);
+  Serial.print(" | Diff: "); Serial.print(diff);
+  Serial.print(" | "); Serial.println(ok ? "OK" : "FAIL");
+
+  return {diff, ok};
 }
 
 void displayResultOLED(const Result& a, const Result& b) {
   display.clearDisplay();
-  display.setTextColor(SSD1306_WHITE);
 
-  //display.setTextSize(1);
-  //display.setCursor(0, 0);
-  //display.println("LWL-KABELTESTER");
-  //display.println("von AMIR");  // Dein Name bleibt sichtbar
-
-  display.setCursor(0, 5);
-  display.print("A Diff: "); display.print(a.diff);
-  display.print(" | B Diff: "); display.print(b.diff);
-
+  // عنوان بزرگ
   display.setTextSize(2);
-  display.setCursor(0, 25);
-  display.print("A: ");
-  display.print(a.ok ? "OK" : "X ");
-  display.setCursor(68, 25);
-  display.print("B: ");
-  display.print(b.ok ? "OK" : "X ");
+  display.setCursor(15, 0);
+  display.println("LWL TEST");
 
+  // نتیجه کانال A
+  display.setTextSize(3);
+  display.setCursor(0, 25);
+  display.print("A:");
+  display.print(a.ok ? "OK" : "X ");
+
+  // نتیجه کانال B
+  display.setCursor(70, 25);
+  display.print("B:");
+  display.print(b.ok ? "OK" : "X");
+
+  // اختلاف Diff کوچک پایین صفحه
   display.setTextSize(1);
-  display.setCursor(0, 55);
-  display.print("Empfindlichkeit: ");
-  display.print(SENSITIVITY);
+  display.setCursor(0, 57);
+  display.print("dA:"); display.print(a.diff);
+  display.print(" dB:"); display.print(b.diff);
+
   display.display();
+}
+
+void showSplash() {
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setCursor(14, 18);
+  display.println("LWL TEST");
+  display.setTextSize(1);
+  display.setCursor(25, 45);
+  display.println("Ready!");
+  display.display();
+  delay(1500);
 }
