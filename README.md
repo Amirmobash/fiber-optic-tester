@@ -1,5 +1,5 @@
 
-# Fiber Optic Tester by Amirmobash
+# Fiber Optic Tester by Amirmobasher
 
 This is a complete fiber optic cable tester using Arduino Nano, LDR sensors, LEDs, and an OLED screen.
 It includes a professional Windows GUI in Python (PyQt5) to verify fiber paths A→A and B→B.
