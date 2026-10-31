@@ -1,0 +1,13 @@
+{
+  "core": "arduino:avr@1.8.6",
+  "fqbn": "arduino:avr:uno",
+  "libs": [
+    "Adafruit BusIO@1.17.0",
+    "Adafruit GFX Library@1.12.1",
+    "Adafruit SSD1306@2.5.13"
+  ],
+  "sources": [
+    "fiber_tester.ino",
+    "arduino/fiber_tester.ino"
+  ]
+}
