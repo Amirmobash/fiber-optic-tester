@@ -50,3 +50,7 @@ The source selects a 128×64 SSD1306 at **0x3C**. LED current limiting and LDR b
 No physical testing, new hardware photographs or measured electrical/optical
 performance is claimed. Retain the author attribution and existing license/source
 notices when reusing the project.
+
+## License
+
+This project is open source under the **MIT License**. Feel free to use, modify, and distribute with attribution.
