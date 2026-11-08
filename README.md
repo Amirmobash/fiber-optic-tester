@@ -1,5 +1,13 @@
 # Dual-channel optical continuity tester
 
+
+<p align="center">
+  <img src="docs/images/arduino-dual-channel-optical-continuity-tester.svg" alt="Arduino two-channel LED LDR optical continuity tester with SSD1306 display concept" width="960" />
+</p>
+
+<sub>Illustrative engineering overview (not a photograph, measured CAD rendering, or independently verified build).</sub>
+
+
 A two-channel LED/LDR continuity check with an SSD1306 OLED and serial diagnostics. Author: **Amir Mobasheraghdam**. Each channel compares an ambient ADC reading with a reading taken while its LED is on; a rise greater than 15 ADC counts is reported as a signal.
 
 ## Reproducible build
